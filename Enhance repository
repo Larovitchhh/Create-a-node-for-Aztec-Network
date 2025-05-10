@@ -1,0 +1,10 @@
+Add a CONTRIBUTING.md: Outline how others can contribute to the repository.
+
+Create Issues and Projects: Use GitHub Issues to track improvements (e.g., adding a prover node guide).
+
+Add GitHub Actions: Automate linting or testing for scripts using GitHub Actions (e.g., actions/setup-node).
+
+Add Visuals: Include screenshots or a video tutorial in the README (host on YouTube or GitHub).
+
+Link to Community: Promote the repository on Aztec’s Discord or X to gain traction.
+
