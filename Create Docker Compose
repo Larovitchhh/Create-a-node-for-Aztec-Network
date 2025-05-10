@@ -1,0 +1,24 @@
+# docker/docker-compose.yml
+version: "3.8"
+services:
+  sequencer-node:
+    image: aztecprotocol/aztec:alpha-testnet
+    network_mode: host
+    environment:
+      ETHEREUM_HOSTS: "${ETHEREUM_HOSTS}"
+      L1_CONSENSUS_HOST_URLS: "${L1_CONSENSUS_HOST_URLS}"
+      VALIDATOR_PRIVATE_KEY: "${VALIDATOR_PRIVATE_KEY}"
+      P2P_IP: "${P2P_IP}"
+      DATA_DIRECTORY: /data/sequencer
+      LOG_LEVEL: debug
+    entrypoint: >
+      sh -c 'node --no-warnings /usr/src/yarn-project/aztec/dest/bin/index.js start --network alpha-testnet --node --archiver --sequencer'
+    volumes:
+      - ~/aztec-data/sequencer:/data/sequencer
+    ports:
+      - "40400:40400/tcp"
+      - "40400:40400 **Note**: This is a continuation from the previous response, as the content was cut off.
+
+```yaml
+      - "40400:40400/udp"
+      - "8080:8080"
