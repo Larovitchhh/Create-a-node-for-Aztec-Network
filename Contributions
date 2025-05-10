@@ -1,0 +1,70 @@
+
+Save this content to `README.md` in the repository root.
+
+### Step 4: Create the Automation Script
+Create a sample automation script (`scripts/aztec-sequencer.sh`) to simplify node setup. This is inspired by community scripts like those from `zunxbt/aztec-sequencer-node`.[](https://github.com/zunxbt/aztec-sequencer-node)
+
+```bash
+#!/bin/bash
+# scripts/aztec-sequencer.sh
+# Script to automate Aztec Sequencer Node setup on Ubuntu
+
+echo "=== Aztec Sequencer Node Setup ==="
+
+# Check for curl and wget
+if ! command -v curl >/dev/null 2>&1 || ! command -v wget >/dev/null 2>&1; then
+    sudo apt-get update
+    sudo apt-get install -y curl wget
+fi
+
+# Install Docker
+if ! command -v docker >/dev/null 2>&1; then
+    echo "Installing Docker..."
+    sudo apt-get install -y docker.io
+    sudo systemctl start docker
+    sudo systemctl enable docker
+fi
+
+# Install Docker Compose
+if ! command -v docker-compose >/dev/null 2>&1; then
+    echo "Installing Docker Compose..."
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+fi
+
+# Prompt for user inputs
+read -p "Enter Sepolia RPC URL: " RPC_URL
+read -p "Enter Sepolia Beacon RPC URL: " BEACON_URL
+read -p "Enter Ethereum Private Key: " PRIVATE_KEY
+read -p "Enter Ethereum Address: " ETH_ADDRESS
+read -p "Enter VPS Public IP: " PUBLIC_IP
+
+# Create .env file
+cat > .env << EOL
+ETHEREUM_HOSTS=$RPC_URL
+L1_CONSENSUS_HOST_URLS=$BEACON_URL
+VALIDATOR_PRIVATE_KEY=$PRIVATE_KEY
+P2P_IP=$PUBLIC_IP
+DATA_DIRECTORY=/data/sequencer
+LOG_LEVEL=debug
+EOL
+
+# Pull Aztec Docker image
+echo "Pulling Aztec Docker image..."
+sudo docker pull aztecprotocol/aztec:alpha-testnet
+
+# Run the node
+echo "Starting Aztec Sequencer Node..."
+source .env
+aztec start --network alpha-testnet --node --archiver --sequencer \
+  --l1-rpc-urls $ETHEREUM_HOSTS \
+  --l1-consensus-host-urls $L1_CONSENSUS_HOST_URLS \
+  --sequencer.validatorPrivateKey $VALIDATOR_PRIVATE_KEY \
+  --sequencer.coinbase $ETH_ADDRESS \
+  --p2p.p2pIp $P2P_IP \
+  --p2p.maxTxPoolSize 1000000000
+
+echo "Node is running! Check logs with:"
+echo "sudo docker logs -f --tail 100 \$(docker ps -q --filter ancestor=aztecprotocol/aztec:alpha-testnet | head -n 1)"
+echo "To stop, press Ctrl+C and run:"
+echo "docker stop \$(docker ps -q --filter 'ancestor=aztecprotocol/aztec') && docker rm \$(docker ps -a -q --filter 'ancestor=aztecprotocol/aztec')"
